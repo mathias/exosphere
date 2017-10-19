@@ -33,6 +33,18 @@ func NewLogger(roles, silencedRoles []string, defaultRole string, writer io.Writ
 	return result
 }
 
+func (l *Logger) LogNew(role string, text string) {
+	fmt.Println("%s | %s", role, text)
+}
+
+func (l *Logger) LogNewf(role string) {
+	fmt.Println("%s | %s", role, text)
+}
+
+func (l *Logger) Logf(role string, format string, a ...interface{}) {
+	l.LogNew(role, fmt.Sprintf(format, a...))
+}
+
 // Log logs the given text, panics if the write fails
 func (l *Logger) Log(text string) {
 	text = NormalizeDockerComposeLog(text)
