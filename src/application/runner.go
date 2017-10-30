@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/Originate/exosphere/src/config"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/Originate/exosphere/src/docker/composerunner"
 	"github.com/Originate/exosphere/src/types"
 )
@@ -24,11 +24,11 @@ type Runner struct {
 	DockerComposeDir         string
 	DockerComposeProjectName string
 	Writer                   io.Writer
-	BuildMode                composebuilder.BuildMode
+	BuildMode                composewriter.BuildMode
 }
 
 // NewRunner is Runner's constructor
-func NewRunner(appConfig types.AppConfig, writer io.Writer, appDir, homeDir, dockerComposeProjectName string, buildMode composebuilder.BuildMode) (*Runner, error) {
+func NewRunner(appConfig types.AppConfig, writer io.Writer, appDir, homeDir, dockerComposeProjectName string, buildMode composewriter.BuildMode) (*Runner, error) {
 	serviceConfigs, err := config.GetServiceConfigs(appDir, appConfig)
 	if err != nil {
 		return &Runner{}, err
@@ -49,7 +49,7 @@ func NewRunner(appConfig types.AppConfig, writer io.Writer, appDir, homeDir, doc
 
 // Run runs the application with graceful shutdown
 func (r *Runner) Run() error {
-	dockerConfigs, err := composebuilder.GetApplicationDockerConfigs(composebuilder.ApplicationOptions{
+	dockerConfigs, err := composewriter.GetApplicationDockerConfigs(composewriter.ApplicationOptions{
 		AppConfig: r.AppConfig,
 		AppDir:    r.AppDir,
 		BuildMode: r.BuildMode,

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Originate/exosphere/src/config"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/Originate/exosphere/src/docker/composerunner"
 	"github.com/Originate/exosphere/src/types"
 	"github.com/Originate/exosphere/src/util"
@@ -22,20 +22,20 @@ type ServiceTester struct {
 	BuiltDependencies        map[string]config.AppDevelopmentDependency
 	AppDir                   string
 	ServiceLocation          string
-	BuildMode                composebuilder.BuildMode
+	BuildMode                composewriter.BuildMode
 	DockerComposeProjectName string
 	Writer                   io.Writer
 	RunOptions               composerunner.RunOptions
 }
 
 // NewServiceTester is ServiceTester's constructor
-func NewServiceTester(serviceContext types.ServiceContext, writer io.Writer, mode composebuilder.BuildMode) (*ServiceTester, error) {
+func NewServiceTester(serviceContext types.ServiceContext, writer io.Writer, mode composewriter.BuildMode) (*ServiceTester, error) {
 	appConfig := serviceContext.AppContext.Config
 	serviceConfig := serviceContext.Config
 	serviceLocation := serviceContext.Location
 	serviceDir := serviceContext.Dir
 	appDir := serviceContext.AppContext.Location
-	dockerComposeProjectName := fmt.Sprintf("%stests", composebuilder.GetDockerComposeProjectName(appDir))
+	dockerComposeProjectName := fmt.Sprintf("%stests", composewriter.GetDockerComposeProjectName(appDir))
 	homeDir, err := util.GetHomeDirectory()
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (s *ServiceTester) getDependencyContainerNames() []string {
 }
 
 func (s *ServiceTester) getDockerComposeConfig() (types.DockerConfigs, error) {
-	dependencyDockerConfigs, err := composebuilder.GetDependenciesDockerConfigs(composebuilder.ApplicationOptions{
+	dependencyDockerConfigs, err := composewriter.GetDependenciesDockerConfigs(composewriter.ApplicationOptions{
 		AppConfig: s.AppConfig,
 		AppDir:    s.AppDir,
 		BuildMode: s.BuildMode,
@@ -81,7 +81,7 @@ func (s *ServiceTester) getDockerComposeConfig() (types.DockerConfigs, error) {
 	if err != nil {
 		return types.DockerConfigs{}, err
 	}
-	dockerConfigs, err := composebuilder.GetServiceDockerConfigs(
+	dockerConfigs, err := composewriter.GetServiceDockerConfigs(
 		s.AppConfig,
 		s.ServiceConfig,
 		types.ServiceData{Location: s.DirName},

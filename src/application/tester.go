@@ -4,14 +4,14 @@ import (
 	"io"
 
 	"github.com/Originate/exosphere/src/config"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/Originate/exosphere/src/types"
 	"github.com/Originate/exosphere/src/util"
 )
 
 // TestApp runs the tests for the entire application and return true if the tests passed
 // and an error if any
-func TestApp(appContext types.AppContext, writer io.Writer, mode composebuilder.BuildMode) (bool, error) {
+func TestApp(appContext types.AppContext, writer io.Writer, mode composewriter.BuildMode) (bool, error) {
 	serviceContexts, err := config.GetServiceContexts(appContext)
 	if err != nil {
 		return false, err
@@ -46,7 +46,7 @@ func TestApp(appContext types.AppContext, writer io.Writer, mode composebuilder.
 
 // TestService runs the tests for the service and return true if the tests passed
 // and an error if any
-func TestService(serviceContext types.ServiceContext, writer io.Writer, mode composebuilder.BuildMode) (bool, error) {
+func TestService(serviceContext types.ServiceContext, writer io.Writer, mode composewriter.BuildMode) (bool, error) {
 	util.PrintSectionHeaderf(writer, "Testing service '%s'\n", serviceContext.Dir)
 	serviceTester, err := NewServiceTester(serviceContext, writer, mode)
 	if err != nil {

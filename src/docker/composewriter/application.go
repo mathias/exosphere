@@ -1,4 +1,4 @@
-package composebuilder
+package composewriter
 
 import (
 	"github.com/Originate/exosphere/src/config"

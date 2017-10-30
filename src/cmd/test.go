@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/Originate/exosphere/src/application"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -23,10 +23,10 @@ var testCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		writer := os.Stdout
-		buildMode := composebuilder.BuildMode{
-			Type:        composebuilder.BuildModeTypeLocal,
+		buildMode := composewriter.BuildMode{
+			Type:        composewriter.BuildModeTypeLocal,
 			Mount:       true,
-			Environment: composebuilder.BuildModeEnvironmentTest,
+			Environment: composewriter.BuildModeEnvironmentTest,
 		}
 		if noMountFlag {
 			buildMode.Mount = false

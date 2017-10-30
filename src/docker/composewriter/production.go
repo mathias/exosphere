@@ -1,4 +1,4 @@
-package composebuilder
+package composewriter
 
 import (
 	"fmt"
@@ -8,17 +8,17 @@ import (
 	"github.com/Originate/exosphere/src/types"
 )
 
-// ProductionDockerComposeBuilder contains the docker-compose.yml config for a single service
-type ProductionDockerComposeBuilder struct {
+// ProductionDockerComposeWriter contains the docker-compose.yml config for a single service
+type ProductionDockerComposeWriter struct {
 	ServiceData       types.ServiceData
 	BuiltDependencies map[string]config.AppProductionDependency
 	Role              string
 	AppDir            string
 }
 
-// NewProductionDockerComposeBuilder is ProductionDockerComposeBuilder's constructor
-func NewProductionDockerComposeBuilder(appConfig types.AppConfig, serviceConfig types.ServiceConfig, serviceData types.ServiceData, role, appDir string) *ProductionDockerComposeBuilder {
-	return &ProductionDockerComposeBuilder{
+// NewProductionDockerComposeWriter is ProductionDockerComposeWriter's constructor
+func NewProductionDockerComposeWriter(appConfig types.AppConfig, serviceConfig types.ServiceConfig, serviceData types.ServiceData, role, appDir string) *ProductionDockerComposeWriter {
+	return &ProductionDockerComposeWriter{
 		ServiceData:       serviceData,
 		BuiltDependencies: config.GetBuiltServiceProductionDependencies(serviceConfig, appConfig, appDir),
 		Role:              role,
@@ -27,7 +27,7 @@ func NewProductionDockerComposeBuilder(appConfig types.AppConfig, serviceConfig 
 }
 
 // getServiceDockerConfigs returns a DockerConfig object for a single service and its dependencies (if any(
-func (d *ProductionDockerComposeBuilder) getServiceDockerConfigs() (types.DockerConfigs, error) {
+func (d *ProductionDockerComposeWriter) getServiceDockerConfigs() (types.DockerConfigs, error) {
 	if d.ServiceData.Location != "" {
 		return d.getInternalServiceDockerConfigs()
 	}
@@ -37,7 +37,7 @@ func (d *ProductionDockerComposeBuilder) getServiceDockerConfigs() (types.Docker
 	return types.DockerConfigs{}, fmt.Errorf("No location or docker image listed for '%s'", d.Role)
 }
 
-func (d *ProductionDockerComposeBuilder) getInternalServiceDockerConfigs() (types.DockerConfigs, error) {
+func (d *ProductionDockerComposeWriter) getInternalServiceDockerConfigs() (types.DockerConfigs, error) {
 	result := types.DockerConfigs{}
 	result[d.Role] = types.DockerConfig{
 		Build: map[string]string{
@@ -52,7 +52,7 @@ func (d *ProductionDockerComposeBuilder) getInternalServiceDockerConfigs() (type
 	return result.Merge(dependencyDockerConfigs), nil
 }
 
-func (d *ProductionDockerComposeBuilder) getExternalServiceDockerConfigs() (types.DockerConfigs, error) {
+func (d *ProductionDockerComposeWriter) getExternalServiceDockerConfigs() (types.DockerConfigs, error) {
 	result := types.DockerConfigs{}
 	result[d.Role] = types.DockerConfig{
 		Image: d.ServiceData.DockerImage,
@@ -61,7 +61,7 @@ func (d *ProductionDockerComposeBuilder) getExternalServiceDockerConfigs() (type
 }
 
 // returns the DockerConfigs object for a service's dependencies
-func (d *ProductionDockerComposeBuilder) getServiceDependenciesDockerConfigs() (types.DockerConfigs, error) {
+func (d *ProductionDockerComposeWriter) getServiceDependenciesDockerConfigs() (types.DockerConfigs, error) {
 	result := types.DockerConfigs{}
 	for _, builtDependency := range d.BuiltDependencies {
 		if builtDependency.HasDockerConfig() {

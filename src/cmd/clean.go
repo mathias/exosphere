@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/Originate/exosphere/src/application"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/moby/moby/client"
 	"github.com/spf13/cobra"
@@ -45,7 +45,7 @@ var cleanCmd = &cobra.Command{
 			panic(err)
 		}
 		fmt.Fprintln(writer, "Removing application containers")
-		composeProjectName := composebuilder.GetDockerComposeProjectName(appDir)
+		composeProjectName := composewriter.GetDockerComposeProjectName(appDir)
 		err = application.CleanApplicationContainers(appDir, composeProjectName, writer)
 		if err != nil {
 			panic(err)

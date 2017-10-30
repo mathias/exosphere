@@ -1,4 +1,4 @@
-package composebuilder_test
+package composewriter_test
 
 import (
 	"os"
@@ -6,13 +6,13 @@ import (
 	"regexp"
 
 	"github.com/Originate/exosphere/src/config"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/Originate/exosphere/src/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ComposeBuilder", func() {
+var _ = Describe("ComposeWriter", func() {
 	var _ = Describe("GetServiceDockerConfigs", func() {
 		var _ = Describe("unshared docker configs", func() {
 			var dockerConfigs types.DockerConfigs
@@ -26,12 +26,12 @@ var _ = Describe("ComposeBuilder", func() {
 				Expect(err).NotTo(HaveOccurred())
 				serviceData := appConfig.GetServiceData()
 				serviceRole := "mongo"
-				buildMode := composebuilder.BuildMode{
-					Type:        composebuilder.BuildModeTypeLocal,
+				buildMode := composewriter.BuildMode{
+					Type:        composewriter.BuildModeTypeLocal,
 					Mount:       true,
-					Environment: composebuilder.BuildModeEnvironmentDevelopment,
+					Environment: composewriter.BuildModeEnvironmentDevelopment,
 				}
-				dockerConfigs, err = composebuilder.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
+				dockerConfigs, err = composewriter.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -86,11 +86,11 @@ var _ = Describe("ComposeBuilder", func() {
 				Expect(err).NotTo(HaveOccurred())
 				serviceData := appConfig.GetServiceData()
 				serviceRole := "users-service"
-				buildMode := composebuilder.BuildMode{
-					Type:        composebuilder.BuildModeTypeLocal,
-					Environment: composebuilder.BuildModeEnvironmentDevelopment,
+				buildMode := composewriter.BuildMode{
+					Type:        composewriter.BuildModeTypeLocal,
+					Environment: composewriter.BuildModeEnvironmentDevelopment,
 				}
-				dockerConfigs, err = composebuilder.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
+				dockerConfigs, err = composewriter.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -124,11 +124,11 @@ var _ = Describe("ComposeBuilder", func() {
 				Expect(err).NotTo(HaveOccurred())
 				serviceData := appConfig.GetServiceData()
 				serviceRole := "users-service"
-				buildMode := composebuilder.BuildMode{
-					Type:        composebuilder.BuildModeTypeLocal,
-					Environment: composebuilder.BuildModeEnvironmentDevelopment,
+				buildMode := composewriter.BuildMode{
+					Type:        composewriter.BuildModeTypeLocal,
+					Environment: composewriter.BuildModeEnvironmentDevelopment,
 				}
-				dockerConfigs, err = composebuilder.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
+				dockerConfigs, err = composewriter.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -149,11 +149,11 @@ var _ = Describe("ComposeBuilder", func() {
 				Expect(err).NotTo(HaveOccurred())
 				serviceData := appConfig.GetServiceData()
 				serviceRole := "postgres-service"
-				buildMode := composebuilder.BuildMode{
-					Type:        composebuilder.BuildModeTypeLocal,
-					Environment: composebuilder.BuildModeEnvironmentDevelopment,
+				buildMode := composewriter.BuildMode{
+					Type:        composewriter.BuildModeTypeLocal,
+					Environment: composewriter.BuildModeEnvironmentDevelopment,
 				}
-				dockerConfigs, err = composebuilder.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
+				dockerConfigs, err = composewriter.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -177,12 +177,12 @@ var _ = Describe("ComposeBuilder", func() {
 			Expect(err).NotTo(HaveOccurred())
 			serviceData := appConfig.GetServiceData()
 			serviceRole := "web"
-			buildMode := composebuilder.BuildMode{
-				Type:        composebuilder.BuildModeTypeLocal,
+			buildMode := composewriter.BuildMode{
+				Type:        composewriter.BuildModeTypeLocal,
 				Mount:       true,
-				Environment: composebuilder.BuildModeEnvironmentProduction,
+				Environment: composewriter.BuildModeEnvironmentProduction,
 			}
-			dockerConfigs, err = composebuilder.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
+			dockerConfigs, err = composewriter.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -220,10 +220,10 @@ var _ = Describe("ComposeBuilder", func() {
 			Expect(err).NotTo(HaveOccurred())
 			serviceData := appConfig.GetServiceData()
 			serviceRole := "web"
-			buildMode := composebuilder.BuildMode{
-				Type: composebuilder.BuildModeTypeDeploy,
+			buildMode := composewriter.BuildMode{
+				Type: composewriter.BuildModeTypeDeploy,
 			}
-			dockerConfigs, err = composebuilder.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
+			dockerConfigs, err = composewriter.GetServiceDockerConfigs(appConfig, serviceConfigs[serviceRole], serviceData[serviceRole], serviceRole, appDir, homeDir, buildMode)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -243,17 +243,17 @@ var _ = Describe("ComposeBuilder", func() {
 		expected := "spacetweet123"
 
 		It("converts all characters to lowercase", func() {
-			actual := composebuilder.GetDockerComposeProjectName("SpaceTweet123")
+			actual := composewriter.GetDockerComposeProjectName("SpaceTweet123")
 			Expect(actual).To(Equal(expected))
 		})
 
 		It("strips non-alphanumeric characters", func() {
-			actual := composebuilder.GetDockerComposeProjectName("$Space-Tweet_123")
+			actual := composewriter.GetDockerComposeProjectName("$Space-Tweet_123")
 			Expect(actual).To(Equal(expected))
 		})
 
 		It("strips whitespace characters", func() {
-			actual := composebuilder.GetDockerComposeProjectName("Space   Tweet  123")
+			actual := composewriter.GetDockerComposeProjectName("Space   Tweet  123")
 			Expect(actual).To(Equal(expected))
 		})
 	})

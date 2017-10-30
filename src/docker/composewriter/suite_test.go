@@ -1,4 +1,4 @@
-package composebuilder_test
+package composewriter_test
 
 import (
 	"os"
@@ -11,7 +11,7 @@ import (
 
 func TestAppSetup(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "docker/composebuilder Suite")
+	RunSpecs(t, "docker/composewriter Suite")
 }
 
 var homeDir string

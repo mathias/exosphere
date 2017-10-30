@@ -5,7 +5,7 @@ import (
 	"path"
 
 	"github.com/Originate/exosphere/src/aws"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/Originate/exosphere/src/terraform"
 	"github.com/Originate/exosphere/src/types"
 	prompt "github.com/kofalt/go-prompt"
@@ -25,11 +25,11 @@ func StartDeploy(deployConfig types.DeployConfig) error {
 	}
 
 	fmt.Fprintln(deployConfig.Writer, "Pushing Docker images to ECR...")
-	dockerConfigs, err := composebuilder.GetApplicationDockerConfigs(composebuilder.ApplicationOptions{
+	dockerConfigs, err := composewriter.GetApplicationDockerConfigs(composewriter.ApplicationOptions{
 		AppConfig: deployConfig.AppConfig,
 		AppDir:    deployConfig.AppDir,
-		BuildMode: composebuilder.BuildMode{
-			Type: composebuilder.BuildModeTypeDeploy,
+		BuildMode: composewriter.BuildMode{
+			Type: composewriter.BuildModeTypeDeploy,
 		},
 		HomeDir: deployConfig.HomeDir,
 	})
@@ -37,7 +37,7 @@ func StartDeploy(deployConfig types.DeployConfig) error {
 		return err
 	}
 	dockerComposeDir := path.Join(deployConfig.AppDir, "tmp")
-	err = composebuilder.WriteYML(dockerComposeDir, dockerConfigs)
+	err = composewriter.WriteYML(dockerComposeDir, dockerConfigs)
 	if err != nil {
 		return err
 	}

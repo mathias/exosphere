@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/Originate/exosphere/src/aws"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/Originate/exosphere/src/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -73,5 +73,5 @@ func prettyPrintSecrets(secrets map[string]string) {
 
 // returns the name for a test project
 func getTestDockerComposeProjectName(appDir string) string {
-	return fmt.Sprintf("%stests", composebuilder.GetDockerComposeProjectName(appDir))
+	return fmt.Sprintf("%stests", composewriter.GetDockerComposeProjectName(appDir))
 }

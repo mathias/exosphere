@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/Originate/exosphere/src/docker/compose"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/pkg/errors"
 )
 
 // Shutdown kills the docker images based on the given options
 func Shutdown(options RunOptions) error {
-	err := composebuilder.WriteYML(options.DockerComposeDir, options.DockerConfigs)
+	err := composewriter.WriteYML(options.DockerComposeDir, options.DockerConfigs)
 	if err != nil {
 		return err
 	}

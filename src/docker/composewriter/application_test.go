@@ -1,11 +1,11 @@
-package composebuilder_test
+package composewriter_test
 
 import (
 	"path"
 	"runtime"
 	"strings"
 
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/Originate/exosphere/src/types"
 	"github.com/Originate/exosphere/src/util"
 	"github.com/Originate/exosphere/test_helpers"
@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("composebuilder", func() {
+var _ = Describe("composewriter", func() {
 	var _ = Describe("GetApplicationDockerConfigs", func() {
 		var filePath string
 
@@ -27,11 +27,11 @@ var _ = Describe("composebuilder", func() {
 			appDir := path.Join(path.Dir(filePath), "tmp", "rds")
 			appConfig, err := types.NewAppConfig(appDir)
 			Expect(err).NotTo(HaveOccurred())
-			dockerConfigs, err := composebuilder.GetApplicationDockerConfigs(composebuilder.ApplicationOptions{
+			dockerConfigs, err := composewriter.GetApplicationDockerConfigs(composewriter.ApplicationOptions{
 				AppConfig: appConfig,
 				AppDir:    appDir,
-				BuildMode: composebuilder.BuildMode{
-					Type: composebuilder.BuildModeTypeDeploy,
+				BuildMode: composewriter.BuildMode{
+					Type: composewriter.BuildModeTypeDeploy,
 				},
 				HomeDir: homeDir,
 			})
@@ -54,12 +54,12 @@ var _ = Describe("composebuilder", func() {
 			appConfig, err := types.NewAppConfig(appDir)
 			Expect(err).NotTo(HaveOccurred())
 
-			dockerConfigs, err := composebuilder.GetApplicationDockerConfigs(composebuilder.ApplicationOptions{
+			dockerConfigs, err := composewriter.GetApplicationDockerConfigs(composewriter.ApplicationOptions{
 				AppConfig: appConfig,
 				AppDir:    appDir,
-				BuildMode: composebuilder.BuildMode{
-					Type:        composebuilder.BuildModeTypeLocal,
-					Environment: composebuilder.BuildModeEnvironmentDevelopment,
+				BuildMode: composewriter.BuildMode{
+					Type:        composewriter.BuildModeTypeLocal,
+					Environment: composewriter.BuildModeEnvironmentDevelopment,
 				},
 				HomeDir: homeDir,
 			})

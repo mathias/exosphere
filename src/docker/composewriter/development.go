@@ -1,4 +1,4 @@
-package composebuilder
+package composewriter
 
 import (
 	"fmt"
@@ -12,8 +12,8 @@ import (
 	"github.com/Originate/exosphere/src/util"
 )
 
-// DevelopmentDockerComposeBuilder contains the docker-compose.yml config for a single service
-type DevelopmentDockerComposeBuilder struct {
+// DevelopmentDockerComposeWriter contains the docker-compose.yml config for a single service
+type DevelopmentDockerComposeWriter struct {
 	AppConfig                types.AppConfig
 	ServiceConfig            types.ServiceConfig
 	ServiceData              types.ServiceData
@@ -25,9 +25,9 @@ type DevelopmentDockerComposeBuilder struct {
 	HomeDir                  string
 }
 
-// NewDevelopmentDockerComposeBuilder is DevelopmentDockerComposeBuilder's constructor
-func NewDevelopmentDockerComposeBuilder(appConfig types.AppConfig, serviceConfig types.ServiceConfig, serviceData types.ServiceData, role, appDir, homeDir string, mode BuildMode) *DevelopmentDockerComposeBuilder {
-	return &DevelopmentDockerComposeBuilder{
+// NewDevelopmentDockerComposeWriter is DevelopmentDockerComposeWriter's constructor
+func NewDevelopmentDockerComposeWriter(appConfig types.AppConfig, serviceConfig types.ServiceConfig, serviceData types.ServiceData, role, appDir, homeDir string, mode BuildMode) *DevelopmentDockerComposeWriter {
+	return &DevelopmentDockerComposeWriter{
 		AppConfig:                appConfig,
 		ServiceConfig:            serviceConfig,
 		ServiceData:              serviceData,
@@ -41,7 +41,7 @@ func NewDevelopmentDockerComposeBuilder(appConfig types.AppConfig, serviceConfig
 }
 
 // getServiceDockerConfigs returns a DockerConfig object for a single service and its dependencies (if any(
-func (d *DevelopmentDockerComposeBuilder) getServiceDockerConfigs() (types.DockerConfigs, error) {
+func (d *DevelopmentDockerComposeWriter) getServiceDockerConfigs() (types.DockerConfigs, error) {
 	if d.ServiceData.Location != "" {
 		return d.getInternalServiceDockerConfigs()
 	}
@@ -51,35 +51,35 @@ func (d *DevelopmentDockerComposeBuilder) getServiceDockerConfigs() (types.Docke
 	return types.DockerConfigs{}, fmt.Errorf("No location or docker image listed for '%s'", d.Role)
 }
 
-func (d *DevelopmentDockerComposeBuilder) getDockerfileName() string {
+func (d *DevelopmentDockerComposeWriter) getDockerfileName() string {
 	if d.Mode.Environment == BuildModeEnvironmentProduction {
 		return "Dockerfile.prod"
 	}
 	return "Dockerfile.dev"
 }
 
-func (d *DevelopmentDockerComposeBuilder) getDockerCommand() string {
+func (d *DevelopmentDockerComposeWriter) getDockerCommand() string {
 	if d.Mode.Environment == BuildModeEnvironmentProduction {
 		return ""
 	}
 	return d.ServiceConfig.Development.Scripts["run"]
 }
 
-func (d *DevelopmentDockerComposeBuilder) getDockerVolumes() []string {
+func (d *DevelopmentDockerComposeWriter) getDockerVolumes() []string {
 	if !d.Mode.Mount {
 		return []string{}
 	}
 	return []string{d.getServiceFilePath() + ":" + "/mnt"}
 }
 
-func (d *DevelopmentDockerComposeBuilder) getRestartPolicy() string {
+func (d *DevelopmentDockerComposeWriter) getRestartPolicy() string {
 	if d.Mode.Environment != BuildModeEnvironmentTest {
 		return "on-failure"
 	}
 	return ""
 }
 
-func (d *DevelopmentDockerComposeBuilder) getInternalServiceDockerConfigs() (types.DockerConfigs, error) {
+func (d *DevelopmentDockerComposeWriter) getInternalServiceDockerConfigs() (types.DockerConfigs, error) {
 	result := types.DockerConfigs{}
 	result[d.Role] = types.DockerConfig{
 		Build: map[string]string{
@@ -102,7 +102,7 @@ func (d *DevelopmentDockerComposeBuilder) getInternalServiceDockerConfigs() (typ
 	return result.Merge(dependencyDockerConfigs), nil
 }
 
-func (d *DevelopmentDockerComposeBuilder) getExternalServiceDockerConfigs() (types.DockerConfigs, error) {
+func (d *DevelopmentDockerComposeWriter) getExternalServiceDockerConfigs() (types.DockerConfigs, error) {
 	result := types.DockerConfigs{}
 	renderedVolumes, err := tools.GetRenderedVolumes(d.ServiceConfig.Docker.Volumes, d.AppConfig.Name, d.Role, d.HomeDir)
 	if err != nil {
@@ -120,11 +120,11 @@ func (d *DevelopmentDockerComposeBuilder) getExternalServiceDockerConfigs() (typ
 	return result, nil
 }
 
-func (d *DevelopmentDockerComposeBuilder) getServiceFilePath() string {
+func (d *DevelopmentDockerComposeWriter) getServiceFilePath() string {
 	return path.Join(d.AppDir, d.ServiceData.Location)
 }
 
-func (d *DevelopmentDockerComposeBuilder) getDockerLinks() []string {
+func (d *DevelopmentDockerComposeWriter) getDockerLinks() []string {
 	result := []string{}
 	for _, dependency := range d.ServiceConfig.Development.Dependencies {
 		result = append(result, fmt.Sprintf("%s%s:%s", dependency.Name, dependency.Version, dependency.Name))
@@ -132,7 +132,7 @@ func (d *DevelopmentDockerComposeBuilder) getDockerLinks() []string {
 	return result
 }
 
-func (d *DevelopmentDockerComposeBuilder) getDockerEnvVars() map[string]string {
+func (d *DevelopmentDockerComposeWriter) getDockerEnvVars() map[string]string {
 	result := map[string]string{"ROLE": d.Role}
 	for _, builtDependency := range d.BuiltAppDependencies {
 		for variable, value := range builtDependency.GetServiceEnvVariables() {
@@ -155,7 +155,7 @@ func (d *DevelopmentDockerComposeBuilder) getDockerEnvVars() map[string]string {
 	return result
 }
 
-func (d *DevelopmentDockerComposeBuilder) getServiceDependsOn() []string {
+func (d *DevelopmentDockerComposeWriter) getServiceDependsOn() []string {
 	result := []string{}
 	for _, builtDependency := range d.BuiltAppDependencies {
 		result = append(result, builtDependency.GetContainerName())
@@ -170,7 +170,7 @@ func (d *DevelopmentDockerComposeBuilder) getServiceDependsOn() []string {
 }
 
 // returns the DockerConfigs object for a service's dependencies
-func (d *DevelopmentDockerComposeBuilder) getServiceDependenciesDockerConfigs() (types.DockerConfigs, error) {
+func (d *DevelopmentDockerComposeWriter) getServiceDependenciesDockerConfigs() (types.DockerConfigs, error) {
 	result := types.DockerConfigs{}
 	for _, builtDependency := range d.BuiltServiceDependencies {
 		dockerConfig, err := builtDependency.GetDockerConfig()

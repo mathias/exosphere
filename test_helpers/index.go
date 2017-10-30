@@ -12,7 +12,7 @@ import (
 
 	"github.com/DATA-DOG/godog/gherkin"
 	"github.com/Originate/exosphere/src/docker/compose"
-	"github.com/Originate/exosphere/src/docker/composebuilder"
+	"github.com/Originate/exosphere/src/docker/composewriter"
 	"github.com/Originate/exosphere/src/docker/tools"
 	execplus "github.com/Originate/go-execplus"
 	dockerTypes "github.com/docker/docker/api/types"
@@ -74,7 +74,7 @@ func createEmptyApp(appName, cwd string) (string, error) {
 }
 
 func killTestContainers(dockerComposeDir, appDir string) error {
-	dockerComposeProjectName := composebuilder.GetDockerComposeProjectName(appDir)
+	dockerComposeProjectName := composewriter.GetDockerComposeProjectName(appDir)
 	err := compose.KillAllContainers(compose.BaseOptions{
 		DockerComposeDir: dockerComposeDir,
 		Writer:           ioutil.Discard,
