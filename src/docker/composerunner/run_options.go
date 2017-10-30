@@ -10,7 +10,7 @@ import (
 type RunOptions struct {
 	DockerComposeDir         string
 	DockerComposeProjectName string
-	DockerConfigs            types.DockerConfigs
+	DockerComposePartial     *types.DockerComposePartial
 	Writer                   io.Writer
 	AbortOnExit              bool
 }

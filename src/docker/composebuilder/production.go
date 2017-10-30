@@ -27,49 +27,49 @@ func NewProductionDockerComposeBuilder(appConfig types.AppConfig, serviceConfig 
 }
 
 // getServiceDockerConfigs returns a DockerConfig object for a single service and its dependencies (if any(
-func (d *ProductionDockerComposeBuilder) getServiceDockerConfigs() (types.DockerConfigs, error) {
+func (d *ProductionDockerComposeBuilder) getPartial() (*types.DockerComposePartial, error) {
 	if d.ServiceData.Location != "" {
-		return d.getInternalServiceDockerConfigs()
+		return d.getInternalPartial()
 	}
 	if d.ServiceData.DockerImage != "" {
-		return d.getExternalServiceDockerConfigs()
+		return d.getExternalPartial()
 	}
-	return types.DockerConfigs{}, fmt.Errorf("No location or docker image listed for '%s'", d.Role)
+	return nil, fmt.Errorf("No location or docker image listed for '%s'", d.Role)
 }
 
-func (d *ProductionDockerComposeBuilder) getInternalServiceDockerConfigs() (types.DockerConfigs, error) {
-	result := types.DockerConfigs{}
-	result[d.Role] = types.DockerConfig{
+func (d *ProductionDockerComposeBuilder) getInternalPartial() (*types.DockerComposePartial, error) {
+	servicePartial := types.NewDockerComposePartial()
+	servicePartial.Services[d.Role] = types.DockerConfig{
 		Build: map[string]string{
 			"context":    path.Join(d.AppDir, d.ServiceData.Location),
 			"dockerfile": "Dockerfile.prod",
 		},
 	}
-	dependencyDockerConfigs, err := d.getServiceDependenciesDockerConfigs()
+	dependenciesPartial, err := d.getDependenciesPartial()
 	if err != nil {
-		return result, err
+		return nil, err
 	}
-	return result.Merge(dependencyDockerConfigs), nil
+	return servicePartial.Merge(dependenciesPartial), nil
 }
 
-func (d *ProductionDockerComposeBuilder) getExternalServiceDockerConfigs() (types.DockerConfigs, error) {
-	result := types.DockerConfigs{}
-	result[d.Role] = types.DockerConfig{
+func (d *ProductionDockerComposeBuilder) getExternalPartial() (*types.DockerComposePartial, error) {
+	servicePartial := types.NewDockerComposePartial()
+	servicePartial.Services[d.Role] = types.DockerConfig{
 		Image: d.ServiceData.DockerImage,
 	}
-	return result, nil
+	return servicePartial, nil
 }
 
 // returns the DockerConfigs object for a service's dependencies
-func (d *ProductionDockerComposeBuilder) getServiceDependenciesDockerConfigs() (types.DockerConfigs, error) {
-	result := types.DockerConfigs{}
+func (d *ProductionDockerComposeBuilder) getDependenciesPartial() (*types.DockerComposePartial, error) {
+	result := types.NewDockerComposePartial()
 	for _, builtDependency := range d.BuiltDependencies {
 		if builtDependency.HasDockerConfig() {
 			dockerConfig, err := builtDependency.GetDockerConfig()
 			if err != nil {
 				return result, err
 			}
-			result[builtDependency.GetServiceName()] = dockerConfig
+			result.Services[builtDependency.GetServiceName()] = dockerConfig
 		}
 	}
 	return result, nil

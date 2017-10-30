@@ -9,7 +9,7 @@ import (
 
 // Run runs docker images based on the given options
 func Run(options RunOptions) error {
-	err := composebuilder.WriteYML(options.DockerComposeDir, options.DockerConfigs)
+	err := composebuilder.WriteYML(options.DockerComposeDir, options.DockerComposePartial)
 	if err != nil {
 		return err
 	}

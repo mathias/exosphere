@@ -49,7 +49,7 @@ func NewRunner(appConfig types.AppConfig, writer io.Writer, appDir, homeDir, doc
 
 // Run runs the application with graceful shutdown
 func (r *Runner) Run() error {
-	dockerConfigs, err := composebuilder.GetApplicationDockerConfigs(composebuilder.ApplicationOptions{
+	dockerComposePartial, err := composebuilder.GetApplicationPartial(composebuilder.ApplicationOptions{
 		AppConfig: r.AppConfig,
 		AppDir:    r.AppDir,
 		BuildMode: r.BuildMode,
@@ -59,7 +59,7 @@ func (r *Runner) Run() error {
 		return err
 	}
 	runOptions := composerunner.RunOptions{
-		DockerConfigs:            dockerConfigs,
+		DockerComposePartial:     dockerComposePartial,
 		DockerComposeDir:         r.DockerComposeDir,
 		DockerComposeProjectName: r.DockerComposeProjectName,
 		Writer: r.Writer,

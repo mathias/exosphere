@@ -27,7 +27,7 @@ var _ = Describe("composebuilder", func() {
 			appDir := path.Join(path.Dir(filePath), "tmp", "rds")
 			appConfig, err := types.NewAppConfig(appDir)
 			Expect(err).NotTo(HaveOccurred())
-			dockerConfigs, err := composebuilder.GetApplicationDockerConfigs(composebuilder.ApplicationOptions{
+			partial, err := composebuilder.GetApplicationPartial(composebuilder.ApplicationOptions{
 				AppConfig: appConfig,
 				AppDir:    appDir,
 				BuildMode: composebuilder.BuildMode{
@@ -38,8 +38,8 @@ var _ = Describe("composebuilder", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("ignoring rds dependencies")
-			delete(dockerConfigs, "my-sql-service")
-			Expect(len(dockerConfigs)).To(Equal(0))
+			delete(partial.Services, "my-sql-service")
+			Expect(len(partial.Services)).To(Equal(0))
 		})
 
 		It("should return the proper docker configs for development", func() {
@@ -54,7 +54,7 @@ var _ = Describe("composebuilder", func() {
 			appConfig, err := types.NewAppConfig(appDir)
 			Expect(err).NotTo(HaveOccurred())
 
-			dockerConfigs, err := composebuilder.GetApplicationDockerConfigs(composebuilder.ApplicationOptions{
+			partial, err := composebuilder.GetApplicationPartial(composebuilder.ApplicationOptions{
 				AppConfig: appConfig,
 				AppDir:    appDir,
 				BuildMode: composebuilder.BuildMode{
@@ -67,32 +67,32 @@ var _ = Describe("composebuilder", func() {
 
 			By("generate an image name for each dependency and external service")
 			for _, serviceRole := range util.JoinStringSlices(internalDependencies, externalDependencies, externalServices) {
-				Expect(len(dockerConfigs[serviceRole].Image)).ToNot(Equal(0))
+				Expect(len(partial.Services[serviceRole].Image)).ToNot(Equal(0))
 			}
 
 			By("should generate a container name for each service and dependency")
 			for _, serviceRole := range allServices {
-				Expect(len(dockerConfigs[serviceRole].ContainerName)).ToNot(Equal(0))
+				Expect(len(partial.Services[serviceRole].ContainerName)).ToNot(Equal(0))
 			}
 
 			By("should have the correct build command for each internal service and dependency")
 			for _, serviceRole := range internalServices {
-				Expect(dockerConfigs[serviceRole].Command).To(Equal(`echo "does not run"`))
+				Expect(partial.Services[serviceRole].Command).To(Equal(`echo "does not run"`))
 			}
-			Expect(dockerConfigs["exocom0.26.1"].Command).To(Equal(""))
+			Expect(partial.Services["exocom0.26.1"].Command).To(Equal(""))
 
 			By("should include 'exocom' in the dependencies of every service")
 			for _, serviceRole := range append(internalServices, externalServices...) {
-				exists := util.DoesStringArrayContain(dockerConfigs[serviceRole].DependsOn, "exocom0.26.1")
+				exists := util.DoesStringArrayContain(partial.Services[serviceRole].DependsOn, "exocom0.26.1")
 				Expect(exists).To(Equal(true))
 			}
 
 			By("should include external dependencies as dependencies")
-			exists := util.DoesStringArrayContain(dockerConfigs["todo-service"].DependsOn, "mongo3.4.0")
+			exists := util.DoesStringArrayContain(partial.Services["todo-service"].DependsOn, "mongo3.4.0")
 			Expect(exists).To(Equal(true))
 
 			By("should include the correct exocom environment variables")
-			environment := dockerConfigs["exocom0.26.1"].Environment
+			environment := partial.Services["exocom0.26.1"].Environment
 			expectedServiceRoutes := []string{
 				`{"receives":["todo.create"],"role":"todo-service","sends":["todo.created"]}`,
 				`{"namespace":"mongo","receives":["mongo.list","mongo.create"],"role":"users-service","sends":["mongo.listed","mongo.created"]}`,
@@ -105,32 +105,32 @@ var _ = Describe("composebuilder", func() {
 
 			By("should include exocom environment variables in internal services' environment")
 			for _, serviceRole := range internalServices {
-				environment := dockerConfigs[serviceRole].Environment
+				environment := partial.Services[serviceRole].Environment
 				Expect(environment["EXOCOM_HOST"]).To(Equal("exocom0.26.1"))
 			}
 
 			By("should generate a volume path for an external dependency that mounts a volume")
-			Expect(len(dockerConfigs["mongo3.4.0"].Volumes)).NotTo(Equal(0))
+			Expect(len(partial.Services["mongo3.4.0"].Volumes)).NotTo(Equal(0))
 
 			By("should have the specified image and container names for the external service")
 			serviceRole := "external-service"
 			imageName := "originate/test-web-server"
-			Expect(dockerConfigs[serviceRole].Image).To(Equal(imageName))
-			Expect(dockerConfigs[serviceRole].ContainerName).To(Equal(serviceRole))
+			Expect(partial.Services[serviceRole].Image).To(Equal(imageName))
+			Expect(partial.Services[serviceRole].ContainerName).To(Equal(serviceRole))
 
 			By("should have the specified ports, volumes and environment variables for the external service")
 			serviceRole = "external-service"
 			ports := []string{"5000:5000"}
-			Expect(dockerConfigs[serviceRole].Ports).To(Equal(ports))
-			Expect(len(dockerConfigs[serviceRole].Volumes)).NotTo(Equal(0))
-			Expect(dockerConfigs[serviceRole].Environment["EXTERNAL_SERVICE_HOST"]).To(Equal("external-service0.1.2"))
-			Expect(dockerConfigs[serviceRole].Environment["EXTERNAL_SERVICE_PORT"]).To(Equal("$EXTERNAL_SERVICE_PORT"))
+			Expect(partial.Services[serviceRole].Ports).To(Equal(ports))
+			Expect(len(partial.Services[serviceRole].Volumes)).NotTo(Equal(0))
+			Expect(partial.Services[serviceRole].Environment["EXTERNAL_SERVICE_HOST"]).To(Equal("external-service0.1.2"))
+			Expect(partial.Services[serviceRole].Environment["EXTERNAL_SERVICE_PORT"]).To(Equal("$EXTERNAL_SERVICE_PORT"))
 
 			By("should have the ports for the external dependency defined in application.yml")
 			serviceRole = "mongo3.4.0"
 			ports = []string{"4000:4000"}
-			Expect(dockerConfigs[serviceRole].Ports).To(Equal(ports))
-			Expect(len(dockerConfigs[serviceRole].Volumes)).NotTo(Equal(0))
+			Expect(partial.Services[serviceRole].Ports).To(Equal(ports))
+			Expect(len(partial.Services[serviceRole].Volumes)).NotTo(Equal(0))
 		})
 	})
 })

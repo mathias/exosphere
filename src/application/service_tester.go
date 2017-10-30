@@ -71,17 +71,17 @@ func (s *ServiceTester) getDependencyContainerNames() []string {
 	return dependencyNames
 }
 
-func (s *ServiceTester) getDockerComposeConfig() (types.DockerConfigs, error) {
-	dependencyDockerConfigs, err := composebuilder.GetDependenciesDockerConfigs(composebuilder.ApplicationOptions{
+func (s *ServiceTester) getDockerComposePartial() (*types.DockerComposePartial, error) {
+	dependenciesPartial, err := composebuilder.GetDependenciesPartial(composebuilder.ApplicationOptions{
 		AppConfig: s.AppConfig,
 		AppDir:    s.AppDir,
 		BuildMode: s.BuildMode,
 		HomeDir:   s.HomeDir,
 	})
 	if err != nil {
-		return types.DockerConfigs{}, err
+		return nil, err
 	}
-	dockerConfigs, err := composebuilder.GetServiceDockerConfigs(
+	partial, err := composebuilder.GetServicePartial(
 		s.AppConfig,
 		s.ServiceConfig,
 		types.ServiceData{Location: s.DirName},
@@ -91,16 +91,15 @@ func (s *ServiceTester) getDockerComposeConfig() (types.DockerConfigs, error) {
 		s.BuildMode,
 	)
 	if err != nil {
-		return types.DockerConfigs{}, err
+		return nil, err
 	}
-	serviceConfig := dockerConfigs[s.DirName]
+	serviceConfig := partial.Services[s.DirName]
 	serviceConfig.DependsOn = s.getDependencyContainerNames()
 	serviceConfig.Command = s.ServiceConfig.Development.Scripts["test"]
-	dockerConfigs[s.DirName] = serviceConfig
 	for _, builtDependency := range s.BuiltDependencies {
-		dockerConfigs[builtDependency.GetContainerName()] = dependencyDockerConfigs[builtDependency.GetContainerName()]
+		partial.Services[builtDependency.GetContainerName()] = dependenciesPartial.Services[builtDependency.GetContainerName()]
 	}
-	return dockerConfigs, nil
+	return partial, nil
 }
 
 // Run runs the tests for the service and return true if the tests passed
@@ -123,12 +122,12 @@ func (s *ServiceTester) Shutdown() error {
 
 func (s *ServiceTester) getRunOptions() (composerunner.RunOptions, error) {
 	dockerComposeDir := path.Join(s.ServiceLocation, "tests", "tmp")
-	dockerConfigs, err := s.getDockerComposeConfig()
+	dockerComposePartial, err := s.getDockerComposePartial()
 	if err != nil {
 		return composerunner.RunOptions{}, err
 	}
 	return composerunner.RunOptions{
-		DockerConfigs:            dockerConfigs,
+		DockerComposePartial:     dockerComposePartial,
 		DockerComposeDir:         dockerComposeDir,
 		DockerComposeProjectName: s.DockerComposeProjectName,
 		Writer:      s.Writer,

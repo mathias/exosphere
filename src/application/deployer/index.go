@@ -25,7 +25,7 @@ func StartDeploy(deployConfig types.DeployConfig) error {
 	}
 
 	fmt.Fprintln(deployConfig.Writer, "Pushing Docker images to ECR...")
-	dockerConfigs, err := composebuilder.GetApplicationDockerConfigs(composebuilder.ApplicationOptions{
+	dockerComposePartial, err := composebuilder.GetApplicationPartial(composebuilder.ApplicationOptions{
 		AppConfig: deployConfig.AppConfig,
 		AppDir:    deployConfig.AppDir,
 		BuildMode: composebuilder.BuildMode{
@@ -37,7 +37,7 @@ func StartDeploy(deployConfig types.DeployConfig) error {
 		return err
 	}
 	dockerComposeDir := path.Join(deployConfig.AppDir, "tmp")
-	err = composebuilder.WriteYML(dockerComposeDir, dockerConfigs)
+	err = composebuilder.WriteYML(dockerComposeDir, dockerComposePartial)
 	if err != nil {
 		return err
 	}
